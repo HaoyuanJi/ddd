@@ -1,31 +1,37 @@
-package Client;
+package Server;
 
-import java.io.PrintWriter;
+import java.io.IOException;
 import java.net.Socket;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.util.Scanner;
+import java.net.ServerSocket;
+import java.util.ArrayList;
 
+//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
+// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class Main {
+    public static int index = 0;
     public static void main(String[] args) {
-        try(Socket socket = new Socket("localhost", 12345)) {
-            PrintWriter output = new PrintWriter(socket.getOutputStream(), true);
 
-            Scanner scanner = new Scanner(System.in);
-            String userInput;
-
-            DiscordClientThread dCThread = new DiscordClientThread(socket);
-            new Thread(dCThread).start();
-            do {
-                userInput = scanner.nextLine();
-                output.println(userInput);
-                if (userInput.equals("exit")) {
-                    //reading the input from server
-                    break;
-                }
-            } while (true);
+        ArrayList<DiscordServerThread> threadLists = new ArrayList<>();
+        try(ServerSocket serverSocket = new ServerSocket(12345)) {
+            while(true) {
+                Socket socket = serverSocket.accept();
+                DiscordServerThread dSThread = new DiscordServerThread(socket, threadLists, index);
+                index++;
+                threadLists.add(dSThread);
+                dSThread.start();
+            }
         } catch (Exception e) {
-            System.out.println("Error occured in client Main: " + e.getStackTrace());
-        }
+            System.out.println("Error happened in server main: " + e.getStackTrace().toString());
+        };
+
+//        //TIP Press <shortcut actionId="ShowIntentionActions"/> with your caret at the highlighted text
+//        // to see how IntelliJ IDEA suggests fixing it.
+//        System.out.printf("Hello and welcome!");
+//
+//        for (int i = 1; i <= 5; i++) {
+//            //TIP Press <shortcut actionId="Debug"/> to start debugging your code. We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint
+//            // for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.
+//            System.out.println("i = " + i);
+//        }
     }
 }
